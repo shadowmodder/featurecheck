@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "featurecheck"
+version = "0.1.0"
+description = "Drift (PSI/KS) and schema validation for ML feature pipelines — catch broken features before they reach the model."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Sudhir Vissa" }]
+dependencies = ["numpy>=1.21"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
