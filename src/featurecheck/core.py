@@ -51,6 +51,34 @@ def check_schema(records, schema):
             "type_issues": issues, "null_rates": null_rates, "n": len(records)}
 
 
+def chi2_drift(expected_counts, actual_counts, eps=1e-6):
+    """Chi-squared drift between two categorical count distributions.
+
+    Args:
+        expected_counts: dict {category: count} or list/array of counts.
+        actual_counts:   same shape as expected_counts.
+
+    Returns dict with chi2, dof, chi2_per_dof, and level ('ok'/'warn'/'alert').
+    Thresholds (chi2/dof > 2 → warn, > 5 → alert) are guidelines, not p-values.
+    """
+    import numpy as np  # already imported at module level, re-stated for clarity
+    if isinstance(expected_counts, dict):
+        categories = sorted(set(expected_counts) | set(actual_counts))
+        e = np.array([expected_counts.get(c, 0) for c in categories], dtype=float)
+        a = np.array([actual_counts.get(c, 0) for c in categories], dtype=float)
+    else:
+        e = np.asarray(expected_counts, dtype=float)
+        a = np.asarray(actual_counts, dtype=float)
+    # Scale expected to the same total as actual
+    e = e / (e.sum() + eps) * (a.sum() + eps)
+    e = np.maximum(e, eps)
+    stat = float(np.sum((a - e) ** 2 / e))
+    dof = max(len(e) - 1, 1)
+    ratio = stat / dof
+    level = "alert" if ratio >= 5.0 else "warn" if ratio >= 2.0 else "ok"
+    return {"chi2": stat, "dof": dof, "chi2_per_dof": ratio, "level": level}
+
+
 def drift_report(expected, actual, psi_warn=0.1, psi_alert=0.25):
     val = psi(expected, actual)
     level = "alert" if val >= psi_alert else "warn" if val >= psi_warn else "ok"

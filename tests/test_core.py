@@ -1,5 +1,5 @@
 import numpy as np
-from featurecheck import psi, ks_statistic, check_schema, drift_report
+from featurecheck import psi, ks_statistic, check_schema, drift_report, chi2_drift
 
 
 def test_psi_zero_for_same_distribution():
@@ -27,3 +27,17 @@ def test_schema_issues():
     out = check_schema(recs, {"age": "int", "name": "str"})
     assert out["null_rates"]["name"] == 0.5
     assert any(i["column"] == "age" for i in out["type_issues"])
+
+
+def test_chi2_identical():
+    counts = {"cat": 100, "dog": 80, "bird": 40}
+    result = chi2_drift(counts, counts)
+    assert result["chi2"] < 1e-6
+    assert result["level"] == "ok"
+
+
+def test_chi2_heavy_shift():
+    expected = {"A": 500, "B": 500}
+    actual = {"A": 950, "B": 50}
+    result = chi2_drift(expected, actual)
+    assert result["level"] in ("warn", "alert")
