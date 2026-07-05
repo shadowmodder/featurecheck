@@ -1,3 +1,5 @@
+[![CI](https://github.com/shadowmodder/featurecheck/actions/workflows/ci.yml/badge.svg)](https://github.com/shadowmodder/featurecheck/actions/workflows/ci.yml)
+
 # featurecheck
 
 Most production ML incidents are data incidents. `featurecheck` is a tiny, NumPy-only guardrail you can run in training, batch scoring, or CI to catch feature drift and schema breakage early.
